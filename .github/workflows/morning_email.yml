@@ -1,9 +1,18 @@
-name: Morning Digest Email
+name: Hebert Five Daily Emails
 
 on:
   schedule:
-    - cron: '30 12 * * *'  # 6:30 AM MDT (UTC-6)
-  workflow_dispatch:        # allow manual trigger from GitHub UI
+    - cron: '30 12 * * *'  # 6:30 AM MDT (UTC-6) — morning digest
+    - cron: '30 2 * * *'   # 8:30 PM MDT (UTC-6) — evening recap (next UTC day)
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: 'morning or evening'
+        required: false
+        default: 'morning'
+
+env:
+  TZ: America/Denver  # ensures date.today() returns correct local date
 
 jobs:
   send-email:
@@ -18,19 +27,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Refresh token and send email
-        id: send
+      - name: Refresh Skylight token
         env:
           SKYLIGHT_REFRESH_TOKEN: ${{ secrets.SKYLIGHT_REFRESH_TOKEN }}
-          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 - <<'EOF'
-          import json, os, time, urllib.parse, urllib.request, urllib.error, subprocess, sys
+          import json, os, time, urllib.parse, urllib.request, urllib.error, sys
 
-          # ── 1. Refresh the Skylight token ─────────────────────────────────────
           refresh_token = os.environ["SKYLIGHT_REFRESH_TOKEN"]
-
           body = urllib.parse.urlencode({
               "grant_type": "refresh_token",
               "client_id": "skylight-mobile",
@@ -46,7 +50,6 @@ jobs:
                   "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
               },
           )
-
           try:
               with urllib.request.urlopen(req) as resp:
                   data = json.loads(resp.read())
@@ -54,26 +57,19 @@ jobs:
               print(f"Token refresh failed: {e.read().decode()}", file=sys.stderr)
               sys.exit(1)
 
-          access_token  = data["access_token"]
-          new_refresh   = data["refresh_token"]
-          print("Token refreshed.")
-
-          # ── 2. Write new refresh token back to GitHub secret ──────────────────
-          # Write to a file that the next step can pick up via gh CLI
           with open("/tmp/new_refresh_token.txt", "w") as f:
-              f.write(new_refresh)
+              f.write(data["refresh_token"])
 
-          # ── 3. Write access token to file for the email script ────────────────
           tokens = {
-              "access_token": access_token,
-              "refresh_token": new_refresh,
+              "access_token": data["access_token"],
+              "refresh_token": data["refresh_token"],
               "expires_at": time.time() + data["expires_in"],
           }
           os.makedirs(os.path.expanduser("~"), exist_ok=True)
           with open(os.path.expanduser("~/.skylight_tokens.json"), "w") as f:
               json.dump(tokens, f)
 
-          print("Tokens saved.")
+          print("Token refreshed.")
           EOF
 
       - name: Rotate refresh token secret
@@ -84,8 +80,18 @@ jobs:
             --repo ${{ github.repository }} \
             < /tmp/new_refresh_token.txt
 
-      - name: Send morning email
+      - name: Send morning digest (6:30 AM)
+        if: github.event_name == 'schedule' && github.event.schedule == '30 12 * * *' || (github.event_name == 'workflow_dispatch' && github.event.inputs.report_type == 'morning')
         env:
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          TZ: America/Denver
         run: |
           python3 scripts/morning_email.py --gmail-password "$GMAIL_PASSWORD"
+
+      - name: Send evening recap (8:30 PM)
+        if: github.event_name == 'schedule' && github.event.schedule == '30 2 * * *' || (github.event_name == 'workflow_dispatch' && github.event.inputs.report_type == 'evening')
+        env:
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          TZ: America/Denver
+        run: |
+          python3 scripts/evening_email.py --gmail-password "$GMAIL_PASSWORD"
