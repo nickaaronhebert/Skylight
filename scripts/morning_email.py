@@ -113,14 +113,42 @@ def fetch(path: str, token: str) -> dict:
         return json.loads(resp.read())
 
 
+def _meal_matches_day(item: dict, day: str, target_weekday: str) -> bool:
+    """Return True if this meal sitting applies to the target day.
+
+    One-off meals store their date(s) in 'instances' — check for an exact match.
+    Recurring meals have an rrule with BYDAY — match the weekday.
+    """
+    a = item["attributes"]
+    instances = a.get("instances") or []
+    rrule = a.get("rrule") or ""
+
+    if instances:
+        return day in instances
+
+    # Recurring — match by day of week via BYDAY
+    for part in rrule.split(";"):
+        if part.startswith("BYDAY="):
+            byday = part.split("=", 1)[1].upper()
+            return target_weekday in byday.split(",")
+
+    return False
+
+
 def fetch_meals(token: str, day: str) -> dict:
     data = fetch(
         f"/api/frames/{FRAME_ID}/meals/sittings"
         f"?date_min={day}&date_max={day}&include=meal_category,meal_recipe",
         token
     )
+    dt = datetime.strptime(day, "%Y-%m-%d")
+    # strftime %a gives "Mon", "Tue" etc — take first 2 chars uppercased for BYDAY
+    weekday = dt.strftime("%a")[:2].upper()
+
     meals = {"Breakfast": [], "Lunch": [], "Dinner": [], "Snack": []}
     for item in data.get("data", []):
+        if not _meal_matches_day(item, day, weekday):
+            continue
         cat_id = item["relationships"]["meal_category"]["data"]["id"]
         cat_name = MEAL_CATEGORIES.get(cat_id, "Other")
         meals[cat_name].append(item["attributes"]["summary"])
