@@ -90,15 +90,15 @@ POST /api/frames/5289925/chores/create_multiple
 
 ## Elizabeth — Nanny — Category ID: `20235149`
 
-2 morning tasks + 2 afternoon tasks per weekday. Laundry days are Mon, Wed, Fri. Deep clean days are Tue, Thu.
+Standing recurring tasks Mon–Fri. In addition to these, there are 3 daily tasks that recur every weekday: **Kids Ready**, **Enforce Morning Routine**, **Toddler Duty + Daily Task**.
 
-| Day | Morning 1 | Morning 2 | Afternoon 1 | Afternoon 2 | RRULE |
-|---|---|---|---|---|---|
-| Monday | Start a load of laundry | Wipe down kitchen counters | Fold and put away laundry | Vacuum common areas | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=MO` |
-| Tuesday | Wipe down bathrooms | Tidy the mudroom | Clean bathroom floors | Restock kids' supplies | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=TU` |
-| Wednesday | Start a load of laundry | Wipe down kitchen counters | Fold and put away laundry | Tidy the playroom | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=WE` |
-| Thursday | Wipe down bathrooms | Organize the mudroom | Clean bathroom floors | Vacuum common areas | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=TH` |
-| Friday | Start a load of laundry | Wipe down kitchen counters | Fold and put away laundry | Tidy for the weekend | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=FR` |
+| Day | Task 1 | Task 2 | RRULE |
+|---|---|---|---|
+| Monday | Fridges cleaned out | Put away grocery order | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=MO` |
+| Tuesday | Monthly Item | Bonus Room | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=TU` |
+| Wednesday | Piano Room | Quarterly Project | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=WE` |
+| Thursday | Laundry Wash/Dry Day | 1 Monthly Item in Between Loads | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=TH` |
+| Friday | Sort Laundry: Bigs will put away their own | Living Room: sweep/mop, wipe down couches, toy bucket clear | `RRULE:FREQ=WEEKLY;INTERVAL=1;WKST=SU;BYDAY=FR` |
 
 ---
 
@@ -118,7 +118,7 @@ During weekly planning (Section 4 and 5 of `docs/weekly-plan.md`), Claude should
 - [ ] No duplicate chores
 
 **Elizabeth:**
-- [ ] 4 tasks (2 morning + 2 afternoon) appearing Mon–Fri for the target week
+- [ ] 5 tasks per weekday appearing Mon–Fri for the target week (2 day-specific + 3 daily standing)
 - [ ] No duplicate tasks
 
 If any tasks are missing, create them using the `create_multiple` endpoint with the correct `recurrence_set` and `category_ids` from this document.
