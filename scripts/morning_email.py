@@ -136,13 +136,17 @@ def _meal_matches_day(item: dict, day: str, target_weekday: str) -> bool:
 
 
 def fetch_meals(token: str, day: str) -> dict:
+    from datetime import timedelta
+    dt = datetime.strptime(day, "%Y-%m-%d")
+    # Query the full surrounding week so the API populates 'instances' correctly
+    date_min = (dt - timedelta(days=7)).strftime("%Y-%m-%d")
+    date_max = (dt + timedelta(days=7)).strftime("%Y-%m-%d")
+
     data = fetch(
         f"/api/frames/{FRAME_ID}/meals/sittings"
-        f"?date_min={day}&date_max={day}&include=meal_category,meal_recipe",
+        f"?date_min={date_min}&date_max={date_max}&include=meal_category,meal_recipe",
         token
     )
-    dt = datetime.strptime(day, "%Y-%m-%d")
-    # strftime %a gives "Mon", "Tue" etc — take first 2 chars uppercased for BYDAY
     weekday = dt.strftime("%a")[:2].upper()
 
     meals = {"Breakfast": [], "Lunch": [], "Dinner": [], "Snack": []}
