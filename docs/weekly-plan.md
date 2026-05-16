@@ -29,7 +29,7 @@ Claude will check the calendar before proposing anything.
 
 **What Claude does:**
 - Checks what meals are already on the calendar
-- Proposes a full week of lunches and dinners based on household preferences
+- Reads `docs/meal-repository.md` and builds the week's menu from approved meals first
 - Respects any constraints flagged in Section 1
 
 **Rules:**
@@ -39,10 +39,13 @@ Claude will check the calendar before proposing anything.
 - One or two fresh-cook nights (salmon, sheet pan) are fine
 - Kid-friendly lunches only
 - Saturday is flexible/leftover night unless specified
+- Avoid repeating a meal used in the previous week if possible
 
 **Approval checkpoint:** Review and approve the full menu before posting.
 
 **What Claude posts:** All meals to the Skylight calendar.
+
+**New meal proposals:** After the menu is approved and posted, propose 10 new meals for Madison to consider adding to the repository. Present them in a simple list with a one-line description. Madison selects which ones to keep — add approved ones to the `## Proposed but Not Yet Approved` section of `docs/meal-repository.md`, then move confirmed ones into the appropriate category.
 
 ---
 
