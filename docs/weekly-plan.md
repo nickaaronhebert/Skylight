@@ -27,25 +27,44 @@ Claude will check the calendar before proposing anything.
 
 ## Section 2 — Meals
 
+This section runs in two phases: new meal proposals first, then menu planning from the full repository.
+
+### Phase 1 — New Meal Proposals
+
 **What Claude does:**
-- Checks what meals are already on the calendar
-- Reads `docs/meal-repository.md` and builds the week's menu from approved meals first
-- Respects any constraints flagged in Section 1
+- Proposes 10 new meals not currently in `docs/recipe-manager.md`
+- Presents each with a name and one-line description
+- Madison selects any number to approve (or none)
+
+**What Claude does with approved meals:**
+- Fully prepares each approved meal in recipe-manager.md format:
+  - Name, description, mealType, appropriateMealTimes, kidFriendly, prepTime, lastUsageDate (null), URL (if available)
+  - Full ingredients list scaled to 10 servings
+  - Step-by-step instructions
+- Writes all approved meals into `docs/recipe-manager.md` under the correct category
+
+**Approval checkpoint:** Madison confirms which new meals to add before Claude writes them to the file.
+
+### Phase 2 — Weekly Menu Planning
+
+**What Claude does:**
+- Reads `docs/recipe-manager.md` (now including any newly added meals)
+- Checks what meals are already on the Skylight calendar for the target week
+- Proposes a full week of lunches (kids) and dinners based on the rules below
 
 **Rules:**
+- Do not schedule any meal whose `lastUsageDate` is within the past 21 days
 - Identify 1–2 protein anchors and build meals around them
-- Intentionally reuse ingredients across meals
+- Intentionally reuse ingredients across meals to reduce waste
 - Weekday dinners = assemble, not cook
 - One or two fresh-cook nights (salmon, sheet pan) are fine
-- Kid-friendly lunches only
+- Lunch slots = kids only; must be kid-friendly and prep < 10 min
+- Adults eat dinner leftovers for lunch — do not plan adult lunches
 - Saturday is flexible/leftover night unless specified
-- Avoid repeating a meal used in the previous week if possible
 
 **Approval checkpoint:** Review and approve the full menu before posting.
 
-**What Claude posts:** All meals to the Skylight calendar.
-
-**New meal proposals:** After the menu is approved and posted, propose 10 new meals for Madison to consider adding to the repository. Present them in a simple list with a one-line description. Madison selects which ones to keep — add approved ones to the `## Proposed but Not Yet Approved` section of `docs/meal-repository.md`, then move confirmed ones into the appropriate category.
+**What Claude posts:** All meals to the Skylight calendar. Updates `lastUsageDate` for each posted meal in `docs/recipe-manager.md`.
 
 ---
 
@@ -69,44 +88,43 @@ Claude will check the calendar before proposing anything.
 
 ---
 
-## Section 4 — Kids' Chores
+## Section 4 — Household Chores Review & Planning
 
-**Standing infrastructure (recurring, set up once):**
-- Bedroom cleaning — daily for Eleanor, Delaney, and Marley
-- Rotating daily chores — 2 per child per day, weekly cycle
-- Full schedule defined in `docs/recurring-tasks.md`
+This section replaces the old separate kids and nanny sections. All recurring tasks are already set up in Skylight — this section is for reviewing last week and confirming the upcoming week.
 
-**What Claude does each week:**
-- Reads `docs/recurring-tasks.md` to know what should exist
-- Verifies recurring chores are showing up correctly for the week
-- Creates any missing chores using the RRULE definitions in that document
-- Adds any special one-off tasks for the week
+### Part A — Last Week's Report
 
-**Approval checkpoint:** Confirm kids' chore state before any changes.
+**What Claude does:**
+- Fetches chore completion data for the previous week from Skylight
+- Reports completion rate per person with done/not-done breakdown
+- Presents as a quick summary (e.g. "Eleanor: 8/10 ✓, Elizabeth: 4/5 ✓")
 
-**What Claude posts:** Missing recurring chores (if any) + any special one-off tasks.
+### Part B — Upcoming Week Chore List
+
+**What Claude does:**
+- Fetches the chore list from Skylight for each day of the target week
+- Presents the full schedule sorted by person, then by day
+- Flags anything that looks missing or unexpected based on `docs/recurring-tasks.md`
+
+**Format:**
+```
+Monday May 19
+  Eleanor: Clean bedroom, Unload dishwasher, Wipe bathroom counters
+  Delaney: Clean bedroom, Wipe bathroom sink, Tidy playroom
+  Marley: Clean bedroom, Pick up toys, Put shoes away
+  Elizabeth: Fridges cleaned out, Put away grocery order, Marley & Adeline's Rooms
+
+Tuesday May 20
+  ...
+```
+
+**Approval checkpoint:** User confirms the schedule looks correct. User specifies any additions (one-off tasks, special requests) or removals.
+
+**What Claude posts:** Any one-off tasks the user requests. Removes anything the user flags.
 
 ---
 
-## Section 5 — Nanny Tasks (Elizabeth)
-
-**Standing infrastructure (recurring, set up once):**
-- 2 morning tasks + 2 afternoon tasks per weekday, weekly cycle
-- Full schedule defined in `docs/recurring-tasks.md`
-
-**What Claude does each week:**
-- Reads `docs/recurring-tasks.md` to know what should exist
-- Verifies Elizabeth's tasks are in place Mon–Fri for the target week
-- Creates any missing tasks using the RRULE definitions in that document
-- Adds any special tasks specific to the week (e.g. deep clean before guests, school forms)
-
-**Approval checkpoint:** Confirm Elizabeth's task state before any changes.
-
-**What Claude posts:** Missing recurring tasks (if any) + any special one-off tasks.
-
----
-
-## Section 6 — Grocery List
+## Section 5 — Grocery List
 
 **What Claude does:**
 - Consolidates all ingredients from the approved meal plan
@@ -121,10 +139,11 @@ Claude will check the calendar before proposing anything.
 ## Complete Weekly Checklist
 
 - [ ] Weekly events reviewed
-- [ ] Menu approved and posted
+- [ ] New meal proposals reviewed and repo updated
+- [ ] Menu approved and posted, lastUsageDates updated
 - [ ] Evening Assistant prep tasks approved and posted
-- [ ] Kids' recurring chores verified
-- [ ] Elizabeth's recurring tasks verified
+- [ ] Last week's chore completion reviewed
+- [ ] Upcoming week chore schedule confirmed
 - [ ] Grocery list generated
 
 **Estimated session time: 15–20 minutes**
