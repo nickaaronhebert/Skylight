@@ -141,7 +141,11 @@ When asked to "plan the week" or similar, follow the full guide in `docs/weekly-
 
 For all recurring chore definitions, schedules, RRULE formats, and category IDs — read `docs/recurring-tasks.md`. Do not rely on memory for these. That document is the source of truth.
 
-For meal planning — read `docs/meal-repository.md` before proposing any meals. Build the week's menu from approved meals in that list. After posting, propose 10 new meals for Madison to consider adding to the repository.
+For meal planning — read `docs/recipe-manager.md` before proposing any meals. This is the source of truth for all recipes, meal types, and last usage dates. Rules:
+- Do not schedule a meal whose `lastUsageDate` is within the past 21 days
+- Lunch slots on the calendar are for kids only — must be kid-friendly and prep < 10 min
+- Update `lastUsageDate` in recipe-manager.md after posting meals to the calendar
+- After the weekly menu is posted, propose 10 new meals for Madison to consider adding
 
 ---
 
